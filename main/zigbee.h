@@ -18,7 +18,7 @@
 #define LIQUID_LEVEL_REPORT_ATTRIBUT_ID     0x0000
 
 #define CURRENT_LEVEL_ATTRIBUTE_ID          0x0001
-#define CURRENT_LEVEL_DEFAULT_VALUE         ((float)0.1)
+#define CURRENT_LEVEL_DEFAULT_VALUE         ((uint16_t)5)
 
 #define APPLICATION_VERSION                 ((uint16_t)0x01)
 #define STACK_VERSION                       ((uint16_t)0x02)

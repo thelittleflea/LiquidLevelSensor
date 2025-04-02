@@ -176,13 +176,13 @@ static void esp_zb_task(void *pvParameters)
 
     // ------------------------------ Cluster MEASUREMENT ------------------------------
     esp_zb_attribute_list_t *esp_zb_measure_cluster = esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_MEASUREMENT);
-    float_t zero_value = CURRENT_LEVEL_DEFAULT_VALUE;
+    uint16_t zero_value = CURRENT_LEVEL_DEFAULT_VALUE;
     esp_zb_cluster_add_manufacturer_attr(
         esp_zb_measure_cluster,
         LIQUID_LEVEL_CLUSTER_ID,
         CURRENT_LEVEL_ATTRIBUTE_ID, 
         ESP_MANUFACTURER_CODE,
-        ESP_ZB_ZCL_ATTR_TYPE_SINGLE,
+        ESP_ZB_ZCL_ATTR_TYPE_U16,
         ESP_ZB_ZCL_ATTR_ACCESS_READ_ONLY | ESP_ZB_ZCL_ATTR_ACCESS_REPORTING, 
         &zero_value
     );
