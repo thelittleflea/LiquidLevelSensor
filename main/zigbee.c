@@ -176,15 +176,70 @@ static void esp_zb_task(void *pvParameters)
 
     // ------------------------------ Cluster MEASUREMENT ------------------------------
     esp_zb_attribute_list_t *esp_zb_measure_cluster = esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_MEASUREMENT);
-    uint16_t zero_value = CURRENT_LEVEL_DEFAULT_VALUE;
+    uint16_t level_zero_value = ATTR_CURRENT_LEVEL_DEFAULT_VALUE;
     esp_zb_cluster_add_manufacturer_attr(
         esp_zb_measure_cluster,
         LIQUID_LEVEL_CLUSTER_ID,
-        CURRENT_LEVEL_ATTRIBUTE_ID, 
+        ATTR_CURRENT_LEVEL_ATTRIBUTE_ID, 
         ESP_MANUFACTURER_CODE,
         ESP_ZB_ZCL_ATTR_TYPE_U16,
         ESP_ZB_ZCL_ATTR_ACCESS_READ_ONLY | ESP_ZB_ZCL_ATTR_ACCESS_REPORTING, 
-        &zero_value
+        &level_zero_value
+    );
+
+    uint16_t max_tank_level = ATTR_MAX_TANK_LEVEL;
+    esp_zb_cluster_add_manufacturer_attr(
+        esp_zb_measure_cluster,
+        LIQUID_LEVEL_CLUSTER_ID,
+        ATTR_MAX_TANK_LEVEL_ID, 
+        ESP_MANUFACTURER_CODE,
+        ESP_ZB_ZCL_ATTR_TYPE_U16,
+        ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE, 
+        &max_tank_level
+    );    
+
+    uint16_t min_tank_level = ATTR_MIN_TANK_LEVEL;
+    esp_zb_cluster_add_manufacturer_attr(
+        esp_zb_measure_cluster,
+        LIQUID_LEVEL_CLUSTER_ID,
+        ATTR_MIN_TANK_LEVEL_ID, 
+        ESP_MANUFACTURER_CODE,
+        ESP_ZB_ZCL_ATTR_TYPE_U16,
+        ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE, 
+        &min_tank_level
+    );  
+
+    uint16_t tank_volume = ATTR_TANK_VOLUME;
+    esp_zb_cluster_add_manufacturer_attr(
+        esp_zb_measure_cluster,
+        LIQUID_LEVEL_CLUSTER_ID,
+        ATTR_TANK_VOLUME_ID, 
+        ESP_MANUFACTURER_CODE,
+        ESP_ZB_ZCL_ATTR_TYPE_U16,
+        ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE, 
+        &tank_volume
+    );
+
+    uint16_t tank_storage_volume = ATTR_TANK_STORAGE_VOLUME;
+    esp_zb_cluster_add_manufacturer_attr(
+        esp_zb_measure_cluster,
+        LIQUID_LEVEL_CLUSTER_ID,
+        ATTR_TANK_STORAGE_VOLUME_ID, 
+        ESP_MANUFACTURER_CODE,
+        ESP_ZB_ZCL_ATTR_TYPE_U16,
+        ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE, 
+        &tank_storage_volume
+    );  
+
+    uint16_t tank_retention_volume = ATTR_TANK_RETENTION_VOLUME;
+    esp_zb_cluster_add_manufacturer_attr(
+        esp_zb_measure_cluster,
+        LIQUID_LEVEL_CLUSTER_ID,
+        ATTR_TANK_STORAGE_RETENTION_ID, 
+        ESP_MANUFACTURER_CODE,
+        ESP_ZB_ZCL_ATTR_TYPE_U16,
+        ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE, 
+        &tank_retention_volume
     );
 
     /* create cluster lists for this endpoint */
@@ -227,7 +282,7 @@ static void esp_zb_task(void *pvParameters)
         .u.send_info.max_interval = 0,
         .u.send_info.def_min_interval = 1,
         .u.send_info.def_max_interval = 0,
-        .attr_id = CURRENT_LEVEL_ATTRIBUTE_ID,
+        .attr_id = ATTR_CURRENT_LEVEL_ATTRIBUTE_ID,
         .manuf_code = ESP_MANUFACTURER_CODE,
     };
 

@@ -15,10 +15,24 @@
 #define LIQUID_LEVEL_SERVER_ENDPOINT        0x01
 #define LIQUID_LEVEL_CLUSTER_ID             0xff00
 #define LIQUID_LEVEL_COMMAND_RESP           0x0001
-#define LIQUID_LEVEL_REPORT_ATTRIBUT_ID     0x0000
 
-#define CURRENT_LEVEL_ATTRIBUTE_ID          0x0001
-#define CURRENT_LEVEL_DEFAULT_VALUE         ((uint16_t)5)
+#define ATTR_CURRENT_LEVEL_ATTRIBUTE_ID     0x0001
+#define ATTR_CURRENT_LEVEL_DEFAULT_VALUE    ((uint16_t)5)
+
+#define ATTR_MAX_TANK_LEVEL_ID              0x0002
+#define ATTR_MAX_TANK_LEVEL                 ((uint16_t)4)
+
+#define ATTR_MIN_TANK_LEVEL_ID              0x0003
+#define ATTR_MIN_TANK_LEVLE                 ((uint16_t)0)
+
+#define ATTR_TANK_VOLUME_ID                 0x0004
+#define ATTR_TANK_VOLUME                    ((uint16_t)2000)
+
+#define ATTR_TANK_STORAGE_VOLUME_ID         0x0005
+#define ATTR_TANK_STORAGE_VOLUME            ((uint16_t)1000)
+
+#define ATTR_TANK_RETENTION_VOLUME_ID       0x0006
+#define ATTR_TANK_RETENTION_VOLUME          ((uint16_t)1000)
 
 #define APPLICATION_VERSION                 ((uint16_t)0x01)
 #define STACK_VERSION                       ((uint16_t)0x02)
