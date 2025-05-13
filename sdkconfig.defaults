@@ -29,3 +29,6 @@ CONFIG_ZB_ENABLED=y
 CONFIG_ZB_ZCZR=y
 # end of Zboss
 # end of Component config
+
+# With this option enabled, esp_timer_dump() prints more data about timers in the output log
+CONFIG_ESP_TIMER_PROFILING=y
