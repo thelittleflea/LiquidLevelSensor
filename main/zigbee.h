@@ -46,9 +46,9 @@
 #define APPLICATION_VERSION                         ((uint16_t)0x01)
 #define STACK_VERSION                               ((uint16_t)0x02)
 #define HW_VERSION                                  ((uint16_t)0x02)
-#define SW_BUILD_ID                                 PROJECT_VER
+//#define SW_BUILD_ID                                 PROJECT_VER
 #define POWER_SOURCE                                ((uint16_t)0x01)
-#define DATE_CODE                                   __DATE__
+//#define DATE_CODE                                   __DATE__
 
 /* Basic manufacturer information */        
 #define ESP_MANUFACTURER_NAME                       "\x0d""TheLittleFlea"                   /* Customized manufacturer name */

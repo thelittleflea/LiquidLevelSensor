@@ -1,6 +1,6 @@
 $manuId="0x9252"
 $imageType="0x1011"
-$version="0x92520002"
+$version="0x92520003"
 $tagId="0x0000"
 $hwMinVersion="0x0001"
 $hwMaxVersion="0x0003"
