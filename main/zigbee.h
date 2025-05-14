@@ -17,7 +17,7 @@
 #define LIQUID_LEVEL_COMMAND_RESP                   0x0001
 
 #define ATTR_CURRENT_LEVEL_ATTRIBUTE_ID             0x0001
-#define ATTR_CURRENT_LEVEL_DEFAULT_VALUE            ((uint16_t)5)
+#define ATTR_CURRENT_LEVEL_DEFAULT_VALUE            ((uint16_t)0)
 
 #define ATTR_MAX_TANK_LEVEL_ID                      0x0002
 #define ATTR_MAX_TANK_LEVEL                         ((uint16_t)100)
@@ -46,14 +46,22 @@
 #define APPLICATION_VERSION                         ((uint16_t)0x01)
 #define STACK_VERSION                               ((uint16_t)0x02)
 #define HW_VERSION                                  ((uint16_t)0x02)
-#define SW_BUILD_ID                                 "\x4""1.00"
+#define SW_BUILD_ID                                 PROJECT_VER
 #define POWER_SOURCE                                ((uint16_t)0x01)
-#define DATE_CODE                                   "\x8""20250401"
+#define DATE_CODE                                   __DATE__
 
 /* Basic manufacturer information */        
-#define ESP_MANUFACTURER_NAME                       "\x0d""TheLittleFlea"                 /* Customized manufacturer name */
+#define ESP_MANUFACTURER_NAME                       "\x0d""TheLittleFlea"                   /* Customized manufacturer name */
 #define ESP_MANUFACTURER_CODE                       0x9252
-#define ESP_MODEL_IDENTIFIER                        "\x0c""LLSensor.001"             /* Customized model identifier */
+#define ESP_MODEL_IDENTIFIER                        "\x0c""LLSensor.001"                    /* Customized model identifier */
+
+/* OTA inofrmation*/
+#define OTA_UPGRADE_IMAGE_TYPE                      0x1011                                  /* The attribute indicates the value for the manufacturer of the device */
+#define OTA_UPGRADE_RUNNING_FILE_VERSION            0x92520001 /* The attribute indicates the file version of the running firmware image on the device */
+#define OTA_UPGRADE_DOWNLOADED_FILE_VERSION         ESP_ZB_ZCL_OTA_UPGRADE_DOWNLOADED_FILE_VERSION_DEF_VALUE                             /* The attribute indicates the file version of the downloaded firmware image on the device */
+#define OTA_UPGRADE_MAX_DATA_SIZE                   223
+#define OTA_ELEMENT_HEADER_LEN                      6       /* OTA element format header size include tag identifier and length field */
+
 
 #define ESP_ZB_ZC_CONFIG()                                          \
     {                                                               \
@@ -74,3 +82,12 @@
     {                                                               \
         .host_connection_mode = ZB_HOST_CONNECTION_MODE_NONE,       \
     }
+
+
+/**
+ * @name Enumeration for the tag identifier denotes the type and format of the data within the element
+ * @anchor esp_ota_element_tag_id_t
+ */
+typedef enum esp_ota_element_tag_id_e {
+    UPGRADE_IMAGE                               = 0x0000,           /*!< Upgrade image */
+} esp_ota_element_tag_id_t;

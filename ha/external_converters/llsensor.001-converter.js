@@ -105,6 +105,7 @@ export default {
     model: 'LLSensor.001',
     vendor: 'TheLittleFlea',
     description: 'DIY The Little Flea custom Wwater sensor',
+    ota: true,
     extend: [
         deviceAddCustomCluster(customCluster.name, {
             ID: customCluster.id,
