@@ -46,9 +46,7 @@
 #define APPLICATION_VERSION                         ((uint16_t)0x01)
 #define STACK_VERSION                               ((uint16_t)0x02)
 #define HW_VERSION                                  ((uint16_t)0x02)
-//#define SW_BUILD_ID                                 PROJECT_VER
 #define POWER_SOURCE                                ((uint16_t)0x01)
-//#define DATE_CODE                                   __DATE__
 
 /* Basic manufacturer information */        
 #define ESP_MANUFACTURER_NAME                       "\x0d""TheLittleFlea"                   /* Customized manufacturer name */
@@ -57,11 +55,16 @@
 
 /* OTA inofrmation*/
 #define OTA_UPGRADE_IMAGE_TYPE                      0x1011                                  /* The attribute indicates the value for the manufacturer of the device */
-#define OTA_UPGRADE_RUNNING_FILE_VERSION            0x92520001 /* The attribute indicates the file version of the running firmware image on the device */
 #define OTA_UPGRADE_DOWNLOADED_FILE_VERSION         ESP_ZB_ZCL_OTA_UPGRADE_DOWNLOADED_FILE_VERSION_DEF_VALUE                             /* The attribute indicates the file version of the downloaded firmware image on the device */
 #define OTA_UPGRADE_MAX_DATA_SIZE                   223
 #define OTA_ELEMENT_HEADER_LEN                      6       /* OTA element format header size include tag identifier and length field */
 
+// #define OTA_IMAGE_VERSION                           @OTA_IMAGE_VERSION@
+// #define OTA_IMAGE_FILE_VERSION                      @OTA_IMAGE_FILE_VERSION@
+// #define OTA_IMAGE_FILE_DATE                         @OTA_IMAGE_FILE_DATE@
+
+//#define SW_BUILD_ID                                 PROJECT_VER
+#define SW_BUILD_ID "\x4""1.00"
 
 #define ESP_ZB_ZC_CONFIG()                                          \
     {                                                               \

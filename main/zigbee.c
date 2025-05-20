@@ -13,9 +13,9 @@
 #include "freertos/task.h"
 #include "zcl/esp_zigbee_zcl_common.h"
 #include "esp_app_desc.h"
+#include "array.h"
 
 static const char *TAG = "ESP_HA_LIQUID_LEVEL_SENSOR";
-
 
 static const esp_partition_t *s_ota_partition = NULL;
 static esp_ota_handle_t s_ota_handle = 0;
@@ -76,6 +76,8 @@ static void esp_app_level_sensor_handler(level_sensor_val_t sensor_value)
 static level_sensor_cfg_t GetLevelSensorConfig() {
     uint16_t max_depth_value = *(uint16_t *) esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_MAX_TANK_LEVEL_ID, ESP_MANUFACTURER_CODE)
                                         ->data_p;
+    uint16_t min_depth_value = *(uint16_t *) esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_MIN_TANK_LEVEL_ID, ESP_MANUFACTURER_CODE)
+                                        ->data_p;
     uint16_t total_volume = *(uint16_t *) esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_TANK_VOLUME_ID, ESP_MANUFACTURER_CODE)
                                         ->data_p;
     uint16_t storage_volume = *(uint16_t *) esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_TANK_STORAGE_VOLUME_ID, ESP_MANUFACTURER_CODE)
@@ -85,6 +87,7 @@ static level_sensor_cfg_t GetLevelSensorConfig() {
 
     level_sensor_cfg_t sensor_config = {
         .max_depth = max_depth_value,
+        .min_depth = min_depth_value,
         .total_volume = total_volume,
         .storage_volume = storage_volume,
         .retention_volume = retention_volume,
@@ -509,7 +512,7 @@ static esp_zb_attribute_list_t *create_zb_ota_cluter()
      *  no further processing shall continue.
      */
     esp_zb_ota_cluster_cfg_t ota_cluster_cfg = {
-        .ota_upgrade_file_version = OTA_UPGRADE_RUNNING_FILE_VERSION,
+        .ota_upgrade_file_version = OTA_IMAGE_FILE_VERSION,
         .ota_upgrade_downloaded_file_ver = OTA_UPGRADE_DOWNLOADED_FILE_VERSION,
         .ota_upgrade_manufacturer = ESP_MANUFACTURER_CODE,
         .ota_upgrade_image_type = OTA_UPGRADE_IMAGE_TYPE,
@@ -545,8 +548,10 @@ static void esp_zb_task(void *pvParameters)
     uint16_t hw_version = HW_VERSION;
     uint16_t power_source = POWER_SOURCE;
     uint16_t zcl_version = ESP_ZB_ZCL_BASIC_ZCL_VERSION_DEFAULT_VALUE;
-
-    esp_app_desc_t* appinfo = esp_app_get_description();
+    char version[9] = {0};
+    char buildDate[9] = {0};
+    strCopyWithSize(version, OTA_IMAGE_VERSION);
+    strCopyWithSize(buildDate, OTA_IMAGE_FILE_DATE);
 
     esp_zb_attribute_list_t *esp_zb_basic_cluster = esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_BASIC);
     esp_zb_basic_cluster_add_attr(esp_zb_basic_cluster, ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID, ESP_MANUFACTURER_NAME);
@@ -556,8 +561,8 @@ static void esp_zb_task(void *pvParameters)
     esp_zb_basic_cluster_add_attr(esp_zb_basic_cluster, ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, &application_version);
     esp_zb_basic_cluster_add_attr(esp_zb_basic_cluster, ESP_ZB_ZCL_ATTR_BASIC_STACK_VERSION_ID, &stack_version);
     esp_zb_basic_cluster_add_attr(esp_zb_basic_cluster, ESP_ZB_ZCL_ATTR_BASIC_HW_VERSION_ID, &hw_version);
-    esp_zb_basic_cluster_add_attr(esp_zb_basic_cluster, ESP_ZB_ZCL_ATTR_BASIC_DATE_CODE_ID, &appinfo->date);
-    esp_zb_basic_cluster_add_attr(esp_zb_basic_cluster, ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID, &appinfo->version);
+    esp_zb_basic_cluster_add_attr(esp_zb_basic_cluster, ESP_ZB_ZCL_ATTR_BASIC_DATE_CODE_ID, &buildDate);
+    esp_zb_basic_cluster_add_attr(esp_zb_basic_cluster, ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID, &version);
 
     // ------------------------------ Cluster IDENTIFY ------------------------------
     esp_zb_identify_cluster_cfg_t identify_cluster_cfg = {
@@ -668,7 +673,6 @@ static void esp_zb_task(void *pvParameters)
 void app_main(void)
 {
     esp_log_level_set("AJ-SR04M-SENSOR", ESP_LOG_DEBUG);
-
     esp_zb_platform_config_t config = {
         .radio_config = ESP_ZB_DEFAULT_RADIO_CONFIG(),
         .host_config = ESP_ZB_DEFAULT_HOST_CONFIG(),

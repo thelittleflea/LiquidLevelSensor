@@ -11,6 +11,7 @@
 
 typedef struct level_sensor_cfg_s {
     int max_depth;
+    int min_depth;
     int total_volume;
     int storage_volume;
     int retention_volume;

@@ -101,7 +101,7 @@ esp_err_t GetLevelSensorValue(level_sensor_val_t *values) {
             ESP_LOGD(TAG, "Invalid result !");
         } else {            
             ESP_LOGD(TAG, "Distance : %d mm", distance);
-            values->depth = globalConfig.max_depth - roundf(distance / 10);
+            values->depth = globalConfig.max_depth -globalConfig.min_depth - roundf(distance / 10);
             compute_other_values(values);
             returnValue = ESP_OK;
         }

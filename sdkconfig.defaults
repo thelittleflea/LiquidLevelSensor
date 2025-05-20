@@ -32,3 +32,6 @@ CONFIG_ZB_ZCZR=y
 
 # With this option enabled, esp_timer_dump() prints more data about timers in the output log
 CONFIG_ESP_TIMER_PROFILING=y
+
+# CONFIG_ESPTOOLPY_FLASHSIZE_2MB=y
+ CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
