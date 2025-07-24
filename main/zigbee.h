@@ -2,8 +2,7 @@
 
 /* Zigbee configuration */
 #define INSTALLCODE_POLICY_ENABLE                   false                                   /* enable the install code policy for security */
-#define ED_AGING_TIMEOUT                            ESP_ZB_ED_AGING_TIMEOUT_64MIN
-#define ED_KEEP_ALIVE                               3000                                    /* 3000 millisecond */
+#define MAX_CHILDREN                                10
 #define HA_ESP_SENSOR_ENDPOINT                      10                                      /* esp temperature sensor device endpoint, used for temperature measurement */
 #define ESP_ZB_PRIMARY_CHANNEL_MASK                 ESP_ZB_TRANSCEIVER_ALL_CHANNELS_MASK    /* Zigbee primary channel mask use in the example */
 #define ESP_ZB_ZCL_CLUSTER_ID_MEASUREMENT           0xff00
@@ -68,11 +67,10 @@
 
 #define ESP_ZB_ZC_CONFIG()                                          \
     {                                                               \
-        .esp_zb_role = ESP_ZB_DEVICE_TYPE_ED,                       \
+        .esp_zb_role = ESP_ZB_DEVICE_TYPE_ROUTER,                   \
         .install_code_policy = INSTALLCODE_POLICY_ENABLE,           \
-        .nwk_cfg.zed_cfg = {                                        \
-            .ed_timeout = ED_AGING_TIMEOUT,                         \
-            .keep_alive = ED_KEEP_ALIVE,                            \
+        .nwk_cfg.zczr_cfg = {                                       \
+            .max_children = MAX_CHILDREN,                           \
         },                                                          \
     }
 
