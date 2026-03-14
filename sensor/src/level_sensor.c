@@ -25,7 +25,7 @@
 /* 
     DEFINES.
 */
-static const char *TAG = "AJ-SR04M-SENSOR";
+static const char *TAG = "A02YYUW-SENSOR";
 static level_sensor_cfg_t globalConfig;
 
 esp_err_t InitLevelSensor(level_sensor_cfg_t *config) {
