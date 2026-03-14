@@ -64,9 +64,10 @@ if (-Not $entry) {
     $entry.manufacturerCode = [uint32]$manuId
     $entry.sha512 = $hash #[System.Convert]::ToBase64String($hashBytes)
 }
-if ($json -is [Array] -And $json.Count -gt 1)
-{
-    $json | ConvertTo-Json | Set-Content -Path "$destination\ota_index.json"
-} else {
-    ConvertTo-Json -InputObject @($json) | Set-Content -Path "$destination\ota_index.json"
-}
+$json
+# if ($json -is [Array] -And $json.Count -gt 1)
+# {
+#     $json | ConvertTo-Json | Set-Content -Path "$destination\ota_index.json"
+# } else {
+#     ConvertTo-Json -InputObject @($json) | Set-Content -Path "$destination\ota_index.json"
+# }
