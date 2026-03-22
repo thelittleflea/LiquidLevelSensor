@@ -74,20 +74,52 @@ static void esp_app_level_sensor_handler(level_sensor_val_t sensor_value)
 }
 
 static level_sensor_cfg_t GetLevelSensorConfig() {
-    uint16_t max_depth_value = *(uint16_t *) esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_MAX_TANK_LEVEL_ID, ESP_MANUFACTURER_CODE)
-                                        ->data_p;
-    uint16_t min_depth_value = *(uint16_t *) esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_MIN_TANK_LEVEL_ID, ESP_MANUFACTURER_CODE)
-                                        ->data_p;
-    uint16_t total_volume = *(uint16_t *) esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_TANK_VOLUME_ID, ESP_MANUFACTURER_CODE)
-                                        ->data_p;
-    uint16_t storage_volume = *(uint16_t *) esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_TANK_STORAGE_VOLUME_ID, ESP_MANUFACTURER_CODE)
-                                        ->data_p;
-    uint16_t retention_volume =  *(uint16_t *) esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_TANK_RETENTION_VOLUME_ID, ESP_MANUFACTURER_CODE)
-                                        ->data_p;
+    // Initialize with safe defaults
+    uint16_t max_tank_depth_value = 100;     // Default 100 cm
+    uint16_t sensor_offset_height_value = 0;   // Default 0 cm
+    uint16_t total_volume = 1000;       // Default 1000 L
+    uint16_t storage_volume = 800;      // Default 800 L
+    uint16_t retention_volume = 200;    // Default 200 L
+    
+    // Safely retrieve attributes with NULL checks
+    esp_zb_zcl_attr_t *attr = esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_MAX_TANK_LEVEL_ID, ESP_MANUFACTURER_CODE);
+    if (attr != NULL && attr->data_p != NULL) {
+        max_tank_depth_value = *(uint16_t *)attr->data_p;
+    } else {
+        ESP_LOGW(TAG, "Failed to get max_tank_depth attribute, using default");
+    }
+    
+    attr = esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_MIN_TANK_LEVEL_ID, ESP_MANUFACTURER_CODE);
+    if (attr != NULL && attr->data_p != NULL) {
+        sensor_offset_height_value = *(uint16_t *)attr->data_p;
+    } else {
+        ESP_LOGW(TAG, "Failed to get sensor_offset_height attribute, using default");
+    }
+    
+    attr = esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_TANK_VOLUME_ID, ESP_MANUFACTURER_CODE);
+    if (attr != NULL && attr->data_p != NULL) {
+        total_volume = *(uint16_t *)attr->data_p;
+    } else {
+        ESP_LOGW(TAG, "Failed to get total_volume attribute, using default");
+    }
+    
+    attr = esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_TANK_STORAGE_VOLUME_ID, ESP_MANUFACTURER_CODE);
+    if (attr != NULL && attr->data_p != NULL) {
+        storage_volume = *(uint16_t *)attr->data_p;
+    } else {
+        ESP_LOGW(TAG, "Failed to get storage_volume attribute, using default");
+    }
+    
+    attr = esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_TANK_RETENTION_VOLUME_ID, ESP_MANUFACTURER_CODE);
+    if (attr != NULL && attr->data_p != NULL) {
+        retention_volume = *(uint16_t *)attr->data_p;
+    } else {
+        ESP_LOGW(TAG, "Failed to get retention_volume attribute, using default");
+    }
 
     level_sensor_cfg_t sensor_config = {
-        .max_depth = max_depth_value,
-        .min_depth = min_depth_value,
+        .max_tank_depth = max_tank_depth_value,
+        .sensor_offset_height = sensor_offset_height_value,
         .total_volume = total_volume,
         .storage_volume = storage_volume,
         .retention_volume = retention_volume,

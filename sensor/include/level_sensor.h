@@ -10,8 +10,8 @@
 #define ESP_ERR_ULTRASONIC_ECHO_TIMEOUT 0x202
 
 typedef struct level_sensor_cfg_s {
-    int max_depth;
-    int min_depth;
+    int max_tank_depth;
+    int sensor_offset_height;
     int total_volume;
     int storage_volume;
     int retention_volume;

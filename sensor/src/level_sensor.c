@@ -17,7 +17,7 @@
 #define ECHO_TASK_STACK_SIZE    128
 #define ECHO_UART_PORT_NUM      UART_NUM_1
 
-#define BUF_SIZE (1024)
+#define BUF_SIZE (256)
 
 #define PING_TIMEOUT 6000
 #define ROUNDTRIP_M 5800.0f
@@ -29,6 +29,10 @@ static const char *TAG = "A02YYUW-SENSOR";
 static level_sensor_cfg_t globalConfig;
 
 esp_err_t InitLevelSensor(level_sensor_cfg_t *config) {
+    if (config == NULL) {
+        ESP_LOGE(TAG, "Config pointer is NULL");
+        return ESP_ERR_INVALID_ARG;
+    }
     globalConfig = *config;
 
     /* Configure parameters of an UART driver,
@@ -38,13 +42,13 @@ esp_err_t InitLevelSensor(level_sensor_cfg_t *config) {
         .data_bits = UART_DATA_8_BITS,
         .parity    = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_CTS_RTS,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
         .source_clk = UART_SCLK_DEFAULT,
     };
     
     ESP_ERROR_CHECK(uart_param_config(ECHO_UART_PORT_NUM, &uart_config));
     ESP_ERROR_CHECK(uart_set_pin(ECHO_UART_PORT_NUM, TRIGGER_GPIO, ECHO_GPIO, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
-    ESP_ERROR_CHECK(uart_driver_install(ECHO_UART_PORT_NUM, BUF_SIZE * 2, 0, 0, NULL, 0));
+    ESP_ERROR_CHECK(uart_driver_install(ECHO_UART_PORT_NUM, 256, 256, 0, NULL, 0));
 
     ESP_LOGI(TAG, "Sensor initialized");
 
@@ -52,13 +56,28 @@ esp_err_t InitLevelSensor(level_sensor_cfg_t *config) {
 }
 
 esp_err_t UpdateLevelSensorConfig(level_sensor_cfg_t *config) {
+    if (config == NULL) {
+        ESP_LOGE(TAG, "Config pointer is NULL");
+        return ESP_ERR_INVALID_ARG;
+    }
     ESP_LOGD(TAG, "Updating sensor level configuration");
     globalConfig = *config;
     return ESP_OK;
 }
 
 void compute_other_values(level_sensor_val_t *level_values) {
-    level_values->total_volume = globalConfig.total_volume * level_values->depth / globalConfig.max_depth;
+    if (level_values == NULL) {
+        ESP_LOGE(TAG, "Level values pointer is NULL");
+        return;
+    }
+    if (globalConfig.max_tank_depth == 0) {
+        ESP_LOGE(TAG, "Max tank depth is zero, cannot compute volumes");
+        return;
+    }
+    level_values->total_volume = globalConfig.total_volume * level_values->depth / globalConfig.max_tank_depth;
+    
+    // Calculate total_volume_percentage
+    level_values->total_volume_percentage = (level_values->depth * 100) / globalConfig.max_tank_depth;
     
     level_values->storage_volume = level_values->total_volume >= globalConfig.storage_volume ?
                  globalConfig.storage_volume : level_values->total_volume;
@@ -66,15 +85,27 @@ void compute_other_values(level_sensor_val_t *level_values) {
     level_values->retention_volume = level_values->total_volume > globalConfig.storage_volume ?
                 level_values->total_volume - globalConfig.storage_volume : 0;
 
-    ESP_LOGD(TAG, "Calculated values : total volume: %d, storage volume: %d, retention volume %d ", 
-        level_values->total_volume, level_values->storage_volume, level_values->retention_volume);
+    ESP_LOGD(TAG, "Calculated values : depth: %d cm, total volume: %d L (%d%%), storage volume: %d L, retention volume: %d L", 
+        level_values->depth, level_values->total_volume, level_values->total_volume_percentage, level_values->storage_volume, level_values->retention_volume);
  }
 
 esp_err_t GetLevelSensorValue(level_sensor_val_t *values) {
-    esp_err_t returnValue = ESP_ERR_NOT_FINISHED;
+    if (values == NULL) {
+        ESP_LOGE(TAG, "Values pointer is NULL");
+        return ESP_ERR_INVALID_ARG;
+    }
+    
+    // Initialize values to avoid garbage data
+    memset(values, 0, sizeof(level_sensor_val_t));
+    
+    esp_err_t returnValue = ESP_FAIL;
     ESP_LOGI(TAG, "Sensor get value started");
 
     uint8_t *data = (uint8_t *) malloc(BUF_SIZE);
+    if (data == NULL) {
+        ESP_LOGE(TAG, "Memory allocation failed");
+        return ESP_ERR_NO_MEM;
+    }
     uint16_t distance = 0;
 
     // Trigger
@@ -88,20 +119,30 @@ esp_err_t GetLevelSensorValue(level_sensor_val_t *values) {
 
     ESP_LOGD(TAG, "Reading from UART");
 
-    // Read data from the UART
-    int len = uart_read_bytes(ECHO_UART_PORT_NUM, data, (BUF_SIZE - 1), 20 / portTICK_PERIOD_MS);
+    // Read data from the UART with longer timeout
+    int len = uart_read_bytes(ECHO_UART_PORT_NUM, data, (BUF_SIZE - 1), 200 / portTICK_PERIOD_MS);
     ESP_LOGD(TAG, "Reading length: %d", len);
     
-    if (len && data[0] == 0xff) {
+    if (len >= 4 && data[0] == 0xff) {
 
         distance = (data[1] << 8) + data[2];
-        char  cs = data[0] + data[1] + data[2];
+        uint8_t cs = data[0] + data[1] + data[2];
 
         if(cs != data[3]) {
             ESP_LOGD(TAG, "Invalid result !");
         } else {            
             ESP_LOGD(TAG, "Distance : %d mm", distance);
-            values->depth = (globalConfig.max_depth + globalConfig.min_depth) - roundf(distance / 10);
+            values->depth = (globalConfig.max_tank_depth + globalConfig.sensor_offset_height) - roundf(distance / 10);
+            
+            // Clamp depth between 0 and max_tank_depth
+            if (values->depth < 0) {
+                values->depth = 0;
+                ESP_LOGW(TAG, "Depth below minimum, clamped to 0");
+            } else if (values->depth > globalConfig.max_tank_depth) {
+                values->depth = globalConfig.max_tank_depth;
+                ESP_LOGW(TAG, "Depth above maximum, clamped to %d", globalConfig.max_tank_depth);
+            }
+            
             compute_other_values(values);
             returnValue = ESP_OK;
         }

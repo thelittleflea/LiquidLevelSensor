@@ -47,11 +47,14 @@
      while (1) {
         ESP_LOGD(TAG, "Run loop.");
          level_sensor_val_t level_values;
+         memset(&level_values, 0, sizeof(level_sensor_val_t));
          returnValue = GetLevelSensorValue(&level_values);
-         if (returnValue == ESP_OK && func_ptr) {
+         if (returnValue == ESP_OK && func_ptr != NULL) {
              func_ptr(level_values);
+         } else if (returnValue != ESP_OK) {
+            ESP_LOGW(TAG, "Failed to get level sensor value: %s", esp_err_to_name(returnValue));
          } else {
-            ESP_LOGW(TAG, "No level value to update .....");
+            ESP_LOGW(TAG, "No callback function registered");
          }
          ESP_LOGD(TAG, "Loop wait .....");
          vTaskDelay(pdMS_TO_TICKS(interval * 1000));
