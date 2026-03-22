@@ -82,14 +82,14 @@ static level_sensor_cfg_t GetLevelSensorConfig() {
     uint16_t retention_volume = 200;    // Default 200 L
     
     // Safely retrieve attributes with NULL checks
-    esp_zb_zcl_attr_t *attr = esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_MAX_TANK_LEVEL_ID, ESP_MANUFACTURER_CODE);
+    esp_zb_zcl_attr_t *attr = esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_MAX_TANK_LEVEL_DEPTH_ID, ESP_MANUFACTURER_CODE);
     if (attr != NULL && attr->data_p != NULL) {
         max_tank_depth_value = *(uint16_t *)attr->data_p;
     } else {
         ESP_LOGW(TAG, "Failed to get max_tank_depth attribute, using default");
     }
     
-    attr = esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_MIN_TANK_LEVEL_ID, ESP_MANUFACTURER_CODE);
+    attr = esp_zb_zcl_get_manufacturer_attribute(HA_ESP_SENSOR_ENDPOINT, LIQUID_LEVEL_CLUSTER_ID, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ATTR_SENSOR_LEVEL_OFFSET_ID, ESP_MANUFACTURER_CODE);
     if (attr != NULL && attr->data_p != NULL) {
         sensor_offset_height_value = *(uint16_t *)attr->data_p;
     } else {
@@ -261,8 +261,8 @@ static esp_err_t zb_attribute_handler(const esp_zb_zcl_set_attr_value_message_t 
     if (message->info.dst_endpoint == HA_ESP_SENSOR_ENDPOINT) {
          if (message->info.cluster == ESP_ZB_ZCL_CLUSTER_ID_MEASUREMENT) {
             switch (message->attribute.id) {
-                case (ATTR_MAX_TANK_LEVEL_ID):
-                case (ATTR_MIN_TANK_LEVEL_ID):
+                case (ATTR_MAX_TANK_LEVEL_DEPTH_ID):
+                case (ATTR_SENSOR_LEVEL_OFFSET_ID):
                 case (ATTR_TANK_VOLUME_ID):
                 case (ATTR_TANK_STORAGE_VOLUME_ID):
                 case (ATTR_TANK_RETENTION_VOLUME_ID):                    
@@ -415,11 +415,11 @@ static esp_err_t zb_action_handler(esp_zb_core_action_callback_id_t callback_id,
     esp_err_t ret = ESP_OK;
     switch (callback_id) {
     case ESP_ZB_CORE_SET_ATTR_VALUE_CB_ID:
-        ESP_LOGW(TAG, "Receive Zigbee attribute action(0x%x) callback", callback_id);
+        ESP_LOGD(TAG, "Receive Zigbee attribute action(0x%x) callback", callback_id);
         ret = zb_attribute_handler((esp_zb_zcl_set_attr_value_message_t *)message);
         break;
     case ESP_ZB_CORE_REPORT_ATTR_CB_ID:
-        ESP_LOGW(TAG, "Receive Zigbee report attribute action(0x%x) callback", callback_id);
+        ESP_LOGD(TAG, "Receive Zigbee report attribute action(0x%x) callback", callback_id);
         break;
     case ESP_ZB_CORE_OTA_UPGRADE_VALUE_CB_ID:
         ret = zb_ota_upgrade_status_handler(*(esp_zb_zcl_ota_upgrade_value_message_t *)message);
@@ -449,26 +449,26 @@ static esp_zb_attribute_list_t *create_zb_measurement_cluter()
         &level_zero_value
     );
 
-    uint16_t max_tank_level = ATTR_MAX_TANK_LEVEL;
+    uint16_t max_tank_level = ATTR_MAX_TANK_LEVEL_DEPTH;
     esp_zb_cluster_add_manufacturer_attr(
         esp_zb_measure_cluster,
         LIQUID_LEVEL_CLUSTER_ID,
-        ATTR_MAX_TANK_LEVEL_ID, 
+        ATTR_MAX_TANK_LEVEL_DEPTH_ID, 
         ESP_MANUFACTURER_CODE,
         ESP_ZB_ZCL_ATTR_TYPE_U16,
         ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE, 
         &max_tank_level
     );    
 
-    uint16_t min_tank_level = ATTR_MIN_TANK_LEVEL;
+    uint16_t sensor_level_offset = ATTR_SENSOR_LEVEL_OFFSET;
     esp_zb_cluster_add_manufacturer_attr(
         esp_zb_measure_cluster,
         LIQUID_LEVEL_CLUSTER_ID,
-        ATTR_MIN_TANK_LEVEL_ID, 
+        ATTR_SENSOR_LEVEL_OFFSET_ID, 
         ESP_MANUFACTURER_CODE,
         ESP_ZB_ZCL_ATTR_TYPE_U16,
         ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE, 
-        &min_tank_level
+        &sensor_level_offset
     );  
 
     uint16_t tank_volume = ATTR_TANK_VOLUME;
@@ -704,7 +704,11 @@ static void esp_zb_task(void *pvParameters)
 
 void app_main(void)
 {
-    esp_log_level_set("AJ-SR04M-SENSOR", ESP_LOG_DEBUG);
+    // Configuration des niveaux de log
+    esp_log_level_set("*", ESP_LOG_INFO);                    // Niveau global par défaut
+    esp_log_level_set("A02YYUW-SENSOR", ESP_LOG_WARN);      // Debug pour le capteur
+    esp_log_level_set("ESP_HA_LIQUID_LEVEL_SENSOR", ESP_LOG_INFO);  // Info pour Zigbee
+    esp_log_level_set("ESP_SENSOR_DRIVER", ESP_LOG_DEBUG);   // Debug pour le driver
     esp_zb_platform_config_t config = {
         .radio_config = ESP_ZB_DEFAULT_RADIO_CONFIG(),
         .host_config = ESP_ZB_DEFAULT_HOST_CONFIG(),

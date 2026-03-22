@@ -18,11 +18,11 @@
 #define ATTR_CURRENT_LEVEL_ATTRIBUTE_ID             0x0001
 #define ATTR_CURRENT_LEVEL_DEFAULT_VALUE            ((uint16_t)0)
 
-#define ATTR_MAX_TANK_LEVEL_ID                      0x0002
-#define ATTR_MAX_TANK_LEVEL                         ((uint16_t)100)
+#define ATTR_MAX_TANK_LEVEL_DEPTH_ID               0x0002
+#define ATTR_MAX_TANK_LEVEL_DEPTH                   ((uint16_t)100)
 
-#define ATTR_MIN_TANK_LEVEL_ID                      0x0003
-#define ATTR_MIN_TANK_LEVEL                         ((uint16_t)0)
+#define ATTR_SENSOR_LEVEL_OFFSET_ID                 0x0003
+#define ATTR_SENSOR_LEVEL_OFFSET                    ((uint16_t)0)
 
 #define ATTR_TANK_VOLUME_ID                         0x0004
 #define ATTR_TANK_VOLUME                            ((uint16_t)2000)
